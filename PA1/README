@@ -7,8 +7,9 @@ Code Files:
 2. Makefile: Compiles the C++ code.
 
 How to Run:
-1. Use the command `make all` to compile the program.
-2. Run the program using `./error_detection`.
+1. Add `data.txt` file into current file dictionary.
+2. Use the command `make all` to compile the program.
+3. Run the program using `./error_detection`.
 
 Project Functionality:
 - The program reads a binary data string, computes CRC-16 and checksum values, introduces random errors, and checks the received data for errors.
