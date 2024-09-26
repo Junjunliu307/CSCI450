@@ -122,7 +122,7 @@ void printResult(const string& data, const string& errorBits) {
 
 // Function to read data from file and process each line
 void processFile(const string& filename) {
-    ifstream infile(filename);
+    ifstream infile(filename.c_str());
     if (!infile) {
         cerr << "Error opening file: " << filename << endl;
         return;
