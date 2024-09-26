@@ -109,7 +109,7 @@ void printResult(const string& data, const string& errorBits) {
 
     // Print results for CRC
     cout << "CRC-16" << endl;
-    cout << "CRC: " << crc << "; \t\t\tResult: " 
+    cout << "CRC: " << crc << "; \t\tResult: " 
          << ((recalculated_crc == received_crc.substr(data.length())) ? "Pass" : "Not Pass") 
          << endl;
 
