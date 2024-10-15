@@ -1,0 +1,22 @@
+Name: Junjun Liu
+Student ID: 4792950768
+Assignment: EE450 Project Part 1
+
+Code Files:
+1. servermain.cpp: Implements the main server that handles multiple clients using TCP connections.
+2. client.cpp: Implements the client that sends department queries to the server using dynamic ports.
+
+How to Run:
+1. Ensure list.txt (department data) is in the same directory as the code files.
+2. Use the command `make all` to compile the program.
+3. Use the command `./servermain` to start the server in one terminal.
+4. Use the command `./client` to start a client in another terminal.
+
+Project Functionality:
+- The server reads department data from list.txt and listens on a static port.
+- Clients connect using dynamic ports and send department queries to the server.
+- The server responds with the relevant campus server ID or a "Not found" message.
+- Both server and client print logs as required by the project.
+
+Reused Code: 
+Some socket programming patterns and code are inspired by Beej's Guide to Network Programming.
