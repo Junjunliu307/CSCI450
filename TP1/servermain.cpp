@@ -16,6 +16,7 @@
 
 #define PORT 24768  
 #define BUFFER_SIZE 1024
+int client_counter = 0;
 
 struct Campus {
     std::string campusID;
@@ -72,16 +73,11 @@ std::string search_department(const std::string &department) {
     return "Not found";
 }
 
-void handle_client(int client_sock) {
+void handle_client(int client_sock,int client_id) {
+    send(client_sock, &client_id, sizeof(client_id), 0);
+
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
-
-    if (getpeername(client_sock, (struct sockaddr *)&client_addr, &addr_len) < 0) {
-        perror("Failed to get client address");
-        return;
-    }
-
-    int client_id = ntohs(client_addr.sin_port);
 
     char department[BUFFER_SIZE];
     int n = recv(client_sock, department, sizeof(department) - 1, 0);
@@ -153,9 +149,11 @@ int main() {
             exit(EXIT_FAILURE);
         }
 
+        client_counter += 1;
+
         if (fork() == 0) {
             close(server_sock);
-            handle_client(client_sock);
+            handle_client(client_sock, client_counter);
             exit(0);
         }
         close(client_sock);

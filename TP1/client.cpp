@@ -34,6 +34,10 @@ int main() {
             exit(EXIT_FAILURE);
         }
 
+        int client_id;
+        recv(sock, &client_id, sizeof(client_id), 0);
+        std::cout << "Received client_id: " << client_id << std::endl;
+
         if (getsockname(sock, (struct sockaddr *)&local_addr, &addr_len) == -1) {
             perror("getsockname");
             close(sock);
