@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <cstring>
 #include <unistd.h>
@@ -8,6 +9,10 @@
 #define PORT 24768
 #define BUFFER_SIZE 1024
 
+std::string generate_unique_id() {
+    return std::to_string(getpid());
+}
+
 int main() {
     int sock;
     struct sockaddr_in server_addr,local_addr;
@@ -16,6 +21,8 @@ int main() {
     char buffer[BUFFER_SIZE];
 
     std::cout << "Client is up and running." << std::endl;
+    std::cout << std::endl;
+    std::string unique_id = generate_unique_id();
 
     while (true) {
         sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -34,10 +41,6 @@ int main() {
             exit(EXIT_FAILURE);
         }
 
-        int client_id;
-        recv(sock, &client_id, sizeof(client_id), 0);
-        std::cout << "Received client_id: " << client_id << std::endl;
-
         if (getsockname(sock, (struct sockaddr *)&local_addr, &addr_len) == -1) {
             perror("getsockname");
             close(sock);
@@ -50,7 +53,10 @@ int main() {
         std::string department;
         std::cin >> department;
 
-        send(sock, department.c_str(), department.length(), 0);
+        std::stringstream ss;
+        ss << unique_id;
+        std::string query = ss.str() + ":" + department;
+        send(sock, query.c_str(), query.length(), 0);
         std::cout << "Client has sent Department " << department 
                   << " to Main Server using TCP over port " << dynamic_port <<"."<< std::endl;
 

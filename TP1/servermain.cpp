@@ -13,10 +13,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
+#include <map>
 
 #define PORT 24768  
 #define BUFFER_SIZE 1024
-int client_counter = 0;
+// int client_counter = 0;
+// std::map<std::string, int> client_map;
 
 struct Campus {
     std::string campusID;
@@ -59,6 +61,7 @@ void load_data(const std::string &filename) {
                   << " contains " << unique_departments.size() 
                   << " distinct departments" << std::endl;
     }
+    std::cout << std::endl;
 }
 
 std::string search_department(const std::string &department) {
@@ -73,24 +76,48 @@ std::string search_department(const std::string &department) {
     return "Not found";
 }
 
-void handle_client(int client_sock,int client_id) {
-    send(client_sock, &client_id, sizeof(client_id), 0);
+void handle_client(int client_sock) {
+    // send(client_sock, &client_id, sizeof(client_id), 0);
 
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
 
-    char department[BUFFER_SIZE];
-    int n = recv(client_sock, department, sizeof(department) - 1, 0);
+    char buffer[BUFFER_SIZE];
+    int n = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
     if (n < 0) {
         perror("Failed to receive data");
         exit(EXIT_FAILURE);
     }
-    department[n] = '\0';
+    buffer[n] = '\0';
+
+    std::string query(buffer);
+    size_t pos = query.find(":");
+    int received_unique_id = std::stoi(query.substr(0, pos));
+    std::string department = query.substr(pos + 1);
+    
+    int client_id = received_unique_id;
+
+    // int client_id;
+    // std::map<std::string, int>::iterator it = client_map.find(received_unique_id);
+    // if (it == client_map.end()) {
+    //     std::cout << received_unique_id << " Not Found" << std::endl;
+    //     client_id = client_counter++;
+    //     client_map[received_unique_id] = client_id;
+    // } else {
+    //     std::cout << received_unique_id << " Found" << std::endl;
+    //     client_id = it->second;
+    // }
+
+    // std::cout << "Current contents of client_map:" << std::endl;
+    // for (std::map<std::string, int>::iterator it = client_map.begin(); it != client_map.end(); ++it) {
+    //     std::cout << "Unique ID: \"" << it->first << "\", Client ID: " << it->second << std::endl;
+    // }
 
     std::cout << "Main server has received the request on Department " 
               << department << " from client "<<client_id <<" using TCP." << std::endl;
 
     std::string result = search_department(department);
+
     send(client_sock, result.c_str(), result.length(), 0);
     if(result == "Not found"){
         std::cout << department << " does not show up in Campus server ";
@@ -113,7 +140,7 @@ void handle_client(int client_sock,int client_id) {
             << client_id << " using TCP over port " 
             << PORT << std::endl;
     }
-
+    std::cout << std::endl;
     close(client_sock);
 }
 
@@ -149,11 +176,9 @@ int main() {
             exit(EXIT_FAILURE);
         }
 
-        client_counter += 1;
-
         if (fork() == 0) {
             close(server_sock);
-            handle_client(client_sock, client_counter);
+            handle_client(client_sock);
             exit(0);
         }
         close(client_sock);
