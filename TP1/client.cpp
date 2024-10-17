@@ -5,19 +5,21 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <cstdio>
+#include <sstream>
 
 #define PORT 24768
 #define BUFFER_SIZE 1024
-
-std::string generate_unique_id() {
-    return std::to_string(getpid());
-}
 
 int string_to_int(const std::string &str) {
     std::stringstream ss(str);
     int num;
     ss >> num;
     return num;
+}
+
+std::string generate_unique_id() {
+    return to_string(getpid());
 }
 
 int main() {
