@@ -18,5 +18,8 @@ Project Functionality:
 - The server responds with the relevant campus server ID or a "Not found" message.
 - Both server and client print logs as required by the project.
 
+Notification:
+- Client_id is not start from 1, it's using an generate unique id so client1 might have client_id 47813 and client2 might have client_id 47833.
+
 Reused Code: 
 Some socket programming patterns and code are inspired by Beej's Guide to Network Programming.
