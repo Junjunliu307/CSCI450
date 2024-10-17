@@ -19,8 +19,14 @@ int string_to_int(const std::string &str) {
     return num;
 }
 
+std::string to_string(int value) {
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
+}
+
 std::string generate_unique_id() {
-    return std::to_string(getpid());
+    return to_string(getpid());
 }
 
 int main() {
