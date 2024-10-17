@@ -13,6 +13,13 @@ std::string generate_unique_id() {
     return std::to_string(getpid());
 }
 
+int string_to_int(const std::string &str) {
+    std::stringstream ss(str);
+    int num;
+    ss >> num;
+    return num;
+}
+
 int main() {
     int sock;
     struct sockaddr_in server_addr,local_addr;
@@ -74,7 +81,7 @@ int main() {
         } else {
             std::cout << "Client has received results from Main Server:"<< std::endl;
             std::cout << department << " is associated with Campus server " 
-                      << std::stoi(buffer) << '.' << std::endl;
+                      << string_to_int(buffer) << '.' << std::endl;
         }
 
         std::cout << std::endl;

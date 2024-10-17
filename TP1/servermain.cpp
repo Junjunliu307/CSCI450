@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
+#include <cstdlib>
 #include <map>
 
 #define PORT 24768  
@@ -27,8 +28,15 @@ struct Campus {
 
 std::vector<Campus> campus_data;
 
+int string_to_int(const std::string &str) {
+    std::stringstream ss(str);
+    int num;
+    ss >> num;
+    return num;
+}
+
 void load_data(const std::string &filename) {
-    std::ifstream file(filename);
+    std::ifstream file(filename.c_str());
     if (!file.is_open()) {
         std::cerr << "Failed to open list.txt" << std::endl;
         exit(EXIT_FAILURE);
@@ -57,7 +65,7 @@ void load_data(const std::string &filename) {
     for (size_t i = 0; i < campus_data.size(); ++i) {
         const Campus &campus = campus_data[i];
         std::set<std::string> unique_departments(campus.departments.begin(), campus.departments.end());
-        std::cout << "Campus Server " << std::stoi(campus.campusID)
+        std::cout << "Campus Server " << string_to_int(campus.campusID)
                   << " contains " << unique_departments.size() 
                   << " distinct departments" << std::endl;
     }
@@ -92,7 +100,7 @@ void handle_client(int client_sock) {
 
     std::string query(buffer);
     size_t pos = query.find(":");
-    int received_unique_id = std::stoi(query.substr(0, pos));
+    int received_unique_id = string_to_int(query.substr(0, pos));
     std::string department = query.substr(pos + 1);
     
     int client_id = received_unique_id;
@@ -123,7 +131,7 @@ void handle_client(int client_sock) {
         std::cout << department << " does not show up in Campus server ";
         std::cout << "< ";
         for (size_t i = 0; i < campus_data.size(); ++i) {
-            std::cout << std::stoi(campus_data[i].campusID);
+            std::cout << string_to_int(campus_data[i].campusID);
             if (i < campus_data.size() - 1) {
                 std::cout << ", ";
             }
@@ -135,7 +143,7 @@ void handle_client(int client_sock) {
 
     }else{
         std::cout << department << " shows up in Campus server " 
-            << std::stoi(result) << std::endl;
+            << string_to_int(result) << std::endl;
         std::cout << "Main Server has sent searching result to client " 
             << client_id << " using TCP over port " 
             << PORT << std::endl;
