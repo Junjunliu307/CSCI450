@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <cstdio>
+#include <cstdlib>
 #include <sstream>
 
 #define PORT 24768
