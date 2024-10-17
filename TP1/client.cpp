@@ -19,7 +19,7 @@ int string_to_int(const std::string &str) {
 }
 
 std::string generate_unique_id() {
-    return to_string(getpid());
+    return std::to_string(getpid());
 }
 
 int main() {
