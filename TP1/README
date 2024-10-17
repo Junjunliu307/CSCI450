@@ -1,25 +1,39 @@
-Name: Junjun Liu
-Student ID: 4792950768
-Assignment: EE450 Project Part 1
+# README
 
-Code Files:
-1. servermain.cpp: Implements the main server that handles multiple clients using TCP connections.
-2. client.cpp: Implements the client that sends department queries to the server using dynamic ports.
+**Full Name**: Junjun Liu
+**Student ID**: 4792950768
+**Platform**: Ubuntu 16.04 (replace with your version if different)
 
-How to Run:
+
+## How to Run
 1. Ensure list.txt (department data) is in the same directory as the code files.
 2. Use the command `make all` to compile the program.
 3. Use the command `./servermain` to start the server in one terminal.
 4. Use the command `./client` to start a client in another terminal.
 
-Project Functionality:
-- The server reads department data from list.txt and listens on a static port.
-- Clients connect using dynamic ports and send department queries to the server.
-- The server responds with the relevant campus server ID or a "Not found" message.
-- Both server and client print logs as required by the project.
 
-Notification:
-- Client_id is not start from 1, it's using an generate unique id so client1 might have client_id 47813 and client2 might have client_id 47833.
+## What I Have Done in the Assignment
+In this assignment, I implemented a client-server architecture where the client requests information related to a department and the server responds with the appropriate data or an error message if the department is not found. The communication between the client and server is established using TCP sockets. The server can handle multiple clients using forked processes to manage concurrent connections.
 
-Reused Code: 
-Some socket programming patterns and code are inspired by Beej's Guide to Network Programming.
+## Code Files and Their Purpose
+
+1. **client.cpp**:
+   - Implements the client-side logic that connects to the server, sends department names, and receives responses regarding department availability. It handles creating sockets, sending queries to the server, and processing server responses.
+
+2. **servermain.cpp**:
+   - Implements the server-side logic that accepts connections from clients, processes requests, searches for the requested department in a predefined dataset, and returns the results. It can handle multiple clients concurrently using forking and manages TCP connections.
+
+## Message Format
+- The message format for communication between the client and server is as follows:
+  - **Client to Server**: The client sends a message in the format of `unique_id:department`, where `unique_id` is generated based on the process ID and `department` is the department name entered by the user.
+  - **Server to Client**: The server responds with either the department name found in the database or a "Department Not Found" message, along with relevant campus information.
+
+## Project Idiosyncrasies
+- The project may fail under the following conditions:
+  - If the server is not running when the client tries to connect, the client will terminate with an error.
+  - If the server fails to fork a process for handling a client connection, further client connections might be affected.
+  - If the dataset file is missing or improperly formatted, the server won't be able to return correct results.
+  
+## Reused Code
+- No external code was reused for this project. All code was written from scratch.
+
