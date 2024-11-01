@@ -50,19 +50,6 @@ void loadDataA() {
             dormitoryDataA[roomType].push_back(room);
         }
     }
-    // for (std::unordered_map<std::string, std::list<RoomInfo> >::iterator deptIt = dormitoryDataA.begin(); 
-    //      deptIt != dormitoryDataA.end(); ++deptIt) {
-    //     std::cout << "Room Type: " << deptIt->first << std::endl;
-        
-    //     // 打印该部门下的每个房间信息
-    //     std::list<RoomInfo>::iterator roomIt = deptIt->second.begin();
-    //     for (; roomIt != deptIt->second.end(); ++roomIt) {
-    //         std::cout << "  Building ID: " << roomIt->buildingID 
-    //                   << ", Availability: " << roomIt->availability
-    //                   << ", Price: " << roomIt->price << std::endl;
-    //     }
-    //     std::cout << std::endl;  // 每个部门后留一个空行
-    // }
 
     file.close();
 }
@@ -90,7 +77,8 @@ void handleRequest(int sockfd) {
 
     if (request == "REQUEST_DEPARTMENT_LIST") {
         // 如果收到请求部门列表的请求
-        sendto(sockfd, departmentList.c_str(), departmentList.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
+        std::string response = std::to_string(PORT_CAMPUS_SERVER_A)+","+departmentList;
+        sendto(sockfd, response.c_str(), response.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
         std::cout << "Server A has sent a department list to Main Server" << std::endl;
     } else {
         std::istringstream ss(request);
@@ -112,21 +100,27 @@ void handleRequest(int sockfd) {
                 }
 
                 // 构建并发送响应消息
-                std::ostringstream response;
-                response << "Server A found totally" << totalAvailability << " available rooms for "
+                std::ostringstream printFormat;
+                std::ostringstream responseFormat;
+                printFormat << "Server A found totally " << totalAvailability << " available rooms for "
+                         << dormType << " type dormitory in Building: ";
+                responseFormat << "There are totally " << totalAvailability << " available rooms for "
                          << dormType << " type dormitory in Building: ";
 
                 for (size_t i = 0; i < buildingIDs.size(); ++i) {
-                    response << buildingIDs[i];
+                    printFormat << buildingIDs[i];
+                    responseFormat << buildingIDs[i];
                     if (i < buildingIDs.size() - 1) {
-                        response << ", ";
+                        printFormat << ", ";
+                        responseFormat << ", ";
                     }
                 }
                 
-                std::string responseStr = response.str();
-                std::cout << responseStr << std::endl;
+                std::string printFormatStr = printFormat.str();
+                std::string responseFormatStr = responseFormat.str();
+                std::cout << printFormatStr << std::endl;
 
-                sendto(sockfd, responseStr.c_str(), responseStr.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
+                sendto(sockfd, responseFormatStr.c_str(), responseFormatStr.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
                 std::cout << "Server A has sent the results to Main Server" << std::endl;
             } else {
                 std::string errorMsg = "Department or dormitory type not found";

@@ -30,14 +30,21 @@ void receiveDepartmentList(int sockfd) {
     sockaddr_in campusAddr;
     socklen_t addrLen = sizeof(campusAddr);
     char buffer[1024];
-    std::list<std::string> serverDepartmentLists;  // 用于存储每个服务器的部门列表
+    std::list<std::string> serverDepartmentLists(3);  // 用于存储每个服务器的部门列表
 
-    for (int i = 0; i < 1; ++i) { // 假设三个校园服务器
+    for (int i = 0; i < 3; ++i) { // 假设三个校园服务器
         int n = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&campusAddr, &addrLen);
         buffer[n] = '\0';
-        std::string deptList(buffer);
+
+        std::string receivedStr(buffer);
+        size_t commaPos = receivedStr.find(',');
+        std::string deptList = receivedStr.substr(commaPos + 1);
+        int serverPortNum = std::stoi(receivedStr.substr(0, commaPos));
+
         // 将每个服务器的部门列表添加到 serverDepartmentLists 中
-        serverDepartmentLists.push_back(deptList);
+        std::list<std::string>::iterator it = serverDepartmentLists.begin();
+        std::advance(it, (serverPortNum-PORT_CAMPUS_SERVER_A)/1000);  // 将迭代器移动到第 i 个位置
+        *it = deptList;
         // 输出格式化的接收信息
         char serverLabel = 'A' + i;  // 根据 i 值生成服务器标识 A/B/C
         std::cout << "Main server has received the department list from Campus server " 
@@ -48,11 +55,11 @@ void receiveDepartmentList(int sockfd) {
         size_t pos = 0;
         while ((pos = deptList.find(',')) != std::string::npos) {
             std::string department = deptList.substr(0, pos);
-            departmentServerMap[department] = PORT_CAMPUS_SERVER_A + i * 1000;  // 将部门名称与对应的服务器编号关联
+            departmentServerMap[department] = serverPortNum;  // 将部门名称与对应的服务器编号关联
             deptList.erase(0, pos + 1);           // 移除已处理的部分
         }
         // 处理最后一个部门
-        departmentServerMap[deptList] = PORT_CAMPUS_SERVER_A + i * 1000;
+        departmentServerMap[deptList] = serverPortNum;
     }
     // 按格式输出每个服务器的部门列表
     char serverLabel = 'A';
@@ -80,14 +87,14 @@ void processUserQuery(int sockfd) {
     }
 
     int serverPort = departmentServerMap[department];
+    char serverName = 'A'+(PORT_CAMPUS_SERVER_A-serverPort)/1000;
+    std::cout << department << " shows up in server " << serverName << std::endl;
     // 发送查询到对应校园服务器...
-    // 设置服务器地址，根据 serverID 确定对应的服务器端口和地址
     sockaddr_in serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
 
     // 假设服务器端口号如下（根据 serverID 确定不同端口号）
-    // int serverPort = PORT_CAMPUS_SERVER_A + serverID * 1000;  // 假设 serverA = 30300, serverB = 30400, serverC = 30500
     serverAddr.sin_port = htons(serverPort);
     serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");  // 本地服务器地址
 
@@ -98,6 +105,25 @@ void processUserQuery(int sockfd) {
     sendto(sockfd, queryMessage.c_str(), queryMessage.length(), 0, 
            (const struct sockaddr *)&serverAddr, sizeof(serverAddr));
 
+    std::cout << "The Main Server has sent query for " << department
+              << " department and " << dormType << " type dormitory to server "
+              << serverName << " using UDP over port " << PORT_MAIN_SERVER << std::endl;
+    
+    char buffer[1024];
+    sockaddr_in fromAddr;
+    socklen_t fromAddrLen = sizeof(fromAddr);
+    
+    int recvResult = recvfrom(sockfd, buffer, sizeof(buffer) - 1, 0, 
+                              (struct sockaddr *)&fromAddr, &fromAddrLen);
+    if (recvResult < 0) {
+        std::cerr << "Error receiving response from server" << std::endl;
+        return;
+    }
+    
+    buffer[recvResult] = '\0';  // 确保缓冲区正确结束
+    std::cout << "The Main server has received searching result(s) of "
+              << dormType << " type dormitory from Campus server " << serverName << std::endl;
+    std::cout << buffer << std::endl;
 
     std::cout << "-----Start a new query-----" << std::endl;
 }
@@ -112,7 +138,7 @@ int main() {
     sockaddr_in serverAddr;
     initializeMainServer(sockfd, serverAddr);
 
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 3; ++i) {
         // 构造 serverA 的地址信息
         sockaddr_in serverAAddr;
         memset(&serverAAddr, 0, sizeof(serverAAddr));
