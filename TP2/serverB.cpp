@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <sstream>
+#include <cstring>
+
 
 #define PORT_CAMPUS_SERVER_B 31768  // 根据学号最后三位修改
 
