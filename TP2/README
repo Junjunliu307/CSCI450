@@ -1,0 +1,39 @@
+# README
+
+**Full Name**: Junjun Liu  
+**Student ID**: 4792950768  
+**Platform**: Ubuntu 16.04 (replace with your version if different)
+
+## How to Run
+1. Ensure `dataA.txt`, `dataB.txt`, and `dataC.txt` (department data files for each server) are in the same directory as the code files.
+2. Use the command `make all` to compile the program.
+3. Use the command `./servermain` to start the main server in one terminal.
+4. Start the campus servers in separate terminals with the commands:
+   - `./serverA`
+   - `./serverB`
+   - `./serverC`
+5. In another terminal, use the command `./client` to start the client for sending queries.
+
+## What I Have Done in the Assignment
+In this assignment, I implemented a multi-server architecture where the main server connects with three campus servers (serverA, serverB, and serverC) to retrieve information about department availability. The client queries the main server, which then communicates with the relevant campus server to retrieve and return data to the client. Communication between the main server and campus servers is done over UDP, while the main server and client communicate over TCP.
+
+## Code Files and Their Purpose
+
+1. **servermain.cpp**:
+   - Implements the main server logic, handling TCP connections with clients and UDP connections with campus servers. When a client request is received, the main server forwards the query to the appropriate campus server and sends the response back to the client.
+
+2. **serverA.cpp, serverB.cpp, serverC.cpp**:
+   - Each file implements a campus server that listens for UDP messages from the main server, processes the request, and returns department availability data for the requested dormitory type. Each server reads its data from a separate text file (`dataA.txt`, `dataB.txt`, `dataC.txt`).
+
+## Message Format
+- The message format for communication between the client, main server, and campus servers is as follows:
+  - **Main Server to Campus Server**: The main server forwards the client’s query in the same format over UDP.
+  - **Campus Server to Main Server**: The campus server responds with department availability information or a "Department Not Found" message if the data is unavailable.
+
+## Project Idiosyncrasies
+- The project may encounter issues under the following conditions:
+  - If a campus server is not running when the main server tries to connect, the main server will report an error.
+  - If any `dataA.txt`, `dataB.txt`, or `dataC.txt` file is missing or incorrectly formatted, the campus server will be unable to return accurate results.
+
+## Reused Code
+- No external code was reused for this project. All code was written independently for this assignment.
