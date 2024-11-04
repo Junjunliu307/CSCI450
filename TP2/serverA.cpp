@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <cstring>
-
+#include <vector>
 
 #define PORT_CAMPUS_SERVER_A 30768  // 根据学号最后三位修改
 
