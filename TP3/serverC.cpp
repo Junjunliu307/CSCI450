@@ -131,7 +131,7 @@ void handleRequest(int sockfd) {
                 sendto(sockfd, responseFormatStr.c_str(), responseFormatStr.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
                 std::cout << "Server C has sent the results to Main Server" << std::endl;
             } else {
-                std::cout<< "Room type "<< requestParam <<" does not show up in Server A" << std::endl;
+                std::cout<< "Room type "<< requestParam <<" does not show up in Server C" << std::endl;
                 std::string errorMsg = "Not able to find the room type.";
                 sendto(sockfd, errorMsg.c_str(), errorMsg.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
             }

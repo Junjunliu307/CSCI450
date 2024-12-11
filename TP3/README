@@ -1,0 +1,50 @@
+# README
+
+**Full Name**: Junjun Liu  
+**Student ID**: 4792950768  
+**Platform**: Ubuntu 16.04 (replace with your version if different)
+
+## How to Run
+1. Ensure `dataA.txt`, `dataB.txt`, `dataC.txt` and `member.txt` (department data files for each server) are in the same directory as the code files.
+2. Use the command `make all` to compile the program.
+3. Use the command `./servermain` to start the main server in one terminal.
+4. Start the campus servers in separate terminals with the commands:
+   - `./serverA`
+   - `./serverB`
+   - `./serverC`
+   - `./servermain`
+   - `./client`
+5. In another terminal, use the command `./client` to start the client for sending queries.
+
+## What I Have Done in the Assignment
+In this project, I implemented a multi-threaded and multi-server architecture to simulate a dormitory reservation system. The main server connects to three campus servers (serverA, serverB, and serverC) using UDP and interacts with clients over TCP. The client sends queries (e.g., room availability, price, or reservation requests) to the main server, which forwards these queries to the appropriate campus server and returns the result to the client.
+
+## Code Files and Their Purpose
+
+1. **servermain.cpp**:
+   - Handles TCP communication with clients and UDP communication with campus servers.
+   - Validates user credentials, forwards client queries to the appropriate campus server, and sends the responses back to the client.
+
+2. **serverA.cpp, serverB.cpp, serverC.cpp**:
+   - Each file implements a campus server that listens for UDP messages from the main server, processes the request, and returns department availability data for the requested dormitory type. Each server reads its data from a separate text file (`dataA.txt`, `dataB.txt`, `dataC.txt`).
+
+3. **client.cpp**:
+   - Provides a user interface for sending queries to the main server.
+   - Communicates with the main server over TCP, sending requests such as room availability, price checks, and reservation requests.
+
+## Message Format
+- The message format for communication between the client, main server, and campus servers is as follows:
+  - **Client to Main Server**: 
+    - Log in: <username>,<password>,<department_name> 
+    - Query: <query_type>,<query_param>
+  - **Main Server to Campus Server**:
+    - Query: <query_type>,<query_param>
+
+## Project Idiosyncrasies
+- The project may encounter issues under the following conditions:
+  - If a campus server is not running when the main server tries to connect, the main server will report an error.
+  - If any `dataA.txt`, `dataB.txt`, or `dataC.txt` file is missing or incorrectly formatted, the campus server will be unable to return accurate results.
+  - The `member.txt` file is missing or contains invalid user credentials.
+
+## Reused Code
+- No external code was reused for this project. All code was written independently for this assignment.

@@ -12,11 +12,11 @@
 #include <sstream> 
 #include <thread>
 
-#define PORT_UDP 34768 // 主服务器的 UDP 端口
-#define PORT_TCP 35768 // 主服务器的 UDP 端口
+#define PORT_UDP 34768 
+#define PORT_TCP 35768 
 #define PORT_CAMPUS_SERVER_A 31768
 
-std::map<std::string, std::string> loginData; // 存储加密用户名和密码
+std::map<std::string, std::string> loginData; 
 std::unordered_map<std::string, int> departmentServerMap;
 
 // 加载登录数据
@@ -46,10 +46,6 @@ std::string processUserQuery(int sockfd,std::string requestType,std::string depa
         std::cout << department << " does not show up in Campus servers" << std::endl;
         return "NOTFIND";
     }
-    // if (dormType != "S" && dormType != "D" && dormType != "T") {
-    //     std::cout << dormType << " does not show up in Campus servers" << std::endl;
-    //     return "NOTFIND";
-    // }
 
     int serverPort = departmentServerMap[department];
     char serverName = 'A'+(PORT_CAMPUS_SERVER_A-serverPort)/1000;
@@ -102,7 +98,6 @@ std::string processUserQuery(int sockfd,std::string requestType,std::string depa
     return receivedData;
 }
 
-// 处理客户端逻辑
 void handleClient(int clientSock, int udpSockfd) {
     char buffer[1024];
     bool authenticated = false;
@@ -122,7 +117,6 @@ void handleClient(int clientSock, int udpSockfd) {
         std::string request(buffer);
 
         if (!authenticated) {
-            // 解析登录请求
             size_t firstComma = request.find(',');
             size_t secondComma = request.find(',', firstComma + 1);
 
@@ -130,7 +124,6 @@ void handleClient(int clientSock, int udpSockfd) {
             password = request.substr(firstComma + 1, secondComma - firstComma - 1);
             departmentName = request.substr(secondComma + 1);
 
-            // 验证用户名和密码
             if (password.empty()) {
                 std::cout << "The main server received the guest request for " << username << " using TCP over port " << PORT_TCP << "." << std::endl;
                 std::cout << "The main server accepts " << username << " as a guest." << std::endl;
@@ -139,7 +132,7 @@ void handleClient(int clientSock, int udpSockfd) {
                 authenticated = true;
             } else {
                 std::cout << "The main server received the authentication for " << username << " using TCP over port " << PORT_TCP << "." << std::endl;
-                if (handleLogin(username, password)) { // 假设 handleLogin 函数已实现
+                if (handleLogin(username, password)) {
                     std::cout << "The authentication passed." << std::endl;
                     send(clientSock, "LOGIN_SUCCESS", strlen("LOGIN_SUCCESS"), 0);
                     std::cout << "The main server sent the authentication result to the client." << std::endl;
@@ -152,23 +145,42 @@ void handleClient(int clientSock, int udpSockfd) {
                 }
             }
         } else {
-            // 处理用户请求
-            std::cout << "Main server has received the query from "
-                      << (password.empty() ? "guest" : "member") << " " << username
-                      << " in " << departmentName
-                      << " for the request of " << request << "." << std::endl;
+            size_t commaPos = request.find(',');
+            std::string requestType, requestParam; 
+            if (commaPos != std::string::npos) {
+                requestType = request.substr(0, commaPos);               
+                requestParam = request.substr(commaPos + 1);           
+            }
 
-            // 示例处理逻辑（调用 processUserQuery）
-            std::string response = processUserQuery(udpSockfd, request, departmentName, "", ""); // 假设 processUserQuery 函数已实现
+            std::cout << "Main server has received the query from "
+                <<(password.empty() ? "guest" : "member") << " " << username
+                << " in " << departmentName
+                << " for the request of " << requestType << "." << std::endl;
+                
+            std::string response;
+            if (requestType == "reserve"){
+                std::string dormType,buildingID;
+                size_t commaPos2 = requestParam.find(',');
+                if (commaPos2 != std::string::npos) {
+                    dormType = requestParam.substr(0, commaPos2);               
+                    buildingID = requestParam.substr(commaPos2 + 1);             
+                }
+                response = processUserQuery(udpSockfd,requestType,departmentName,dormType,buildingID);
+            }else{
+                response = processUserQuery(udpSockfd,requestType,departmentName,requestParam,"");
+            }
 
             send(clientSock, response.c_str(), response.size(), 0);
-            std::cout << "The Main server has sent back the result for the request to the client "
-                      << (password.empty() ? "guest" : "member") << " " << username
-                      << " using TCP over port " << PORT_TCP << "." << std::endl;
+            std::cout << "The Main server has sent back the result for the request of "
+                << requestType
+                << " to the client " << (password.empty() ? "guest" : "member")
+                << " " << username
+                << " using TCP over port " << PORT_TCP << "."
+                << std::endl;
         }
     }
 
-    close(clientSock); // 关闭客户端连接
+    close(clientSock); 
 }
 
 void startTCPServer(int udpSockfd) {
@@ -176,7 +188,6 @@ void startTCPServer(int udpSockfd) {
     struct sockaddr_in serverAddr, clientAddr;
     socklen_t addrLen = sizeof(clientAddr);
 
-    // 创建 TCP Socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
         perror("Socket creation failed");
@@ -208,12 +219,11 @@ void startTCPServer(int udpSockfd) {
             continue;
         }
 
-        // 创建新线程处理客户端
         std::thread clientThread(handleClient, clientSock, udpSockfd);
-        clientThread.detach(); // 分离线程以独立运行
+        clientThread.detach();
     }
 
-    close(sockfd); // 关闭服务器套接字
+    close(sockfd);
 }
 
 
@@ -244,7 +254,7 @@ void receiveDepartmentList(int sockfd) {
         int serverPortNum = std::stoi(receivedStr.substr(0, commaPos));
 
         std::list<std::string>::iterator it = serverDepartmentLists.begin();
-        std::advance(it, (serverPortNum-PORT_CAMPUS_SERVER_A)/1000);  // 将迭代器移动到第 i 个位置
+        std::advance(it, (serverPortNum-PORT_CAMPUS_SERVER_A)/1000);
         *it = deptList;
         
         char serverLabel = 'A' + i;  
