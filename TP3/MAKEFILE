@@ -1,5 +1,4 @@
 all: servermain serverA serverB serverC client
-# all: servermain serverA client
 
 servermain: servermain.cpp
 	g++ -std=c++11 servermain.cpp -o servermain
@@ -18,6 +17,3 @@ client: client.cpp
 
 clean:
 	rm -f servermain serverA serverB serverC client
-
-# clean:
-# 	rm -f servermain serverA client
