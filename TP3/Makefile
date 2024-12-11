@@ -1,7 +1,7 @@
 all: servermain serverA serverB serverC client
 
 servermain: servermain.cpp
-	g++ -std=c++11 servermain.cpp -o servermain
+	g++ -std=c++11 servermain.cpp -o servermain -lpthread
 
 serverA: serverA.cpp
 	g++ -std=c++11 serverA.cpp -o serverA
