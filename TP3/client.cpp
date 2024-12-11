@@ -4,9 +4,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define SERVER_PORT 35768 // 主服务器的 TCP 端口
+#define SERVER_PORT 35768
 
-// 加密函数
 std::string encrypt(const std::string& input) {
     std::string encrypted;
     for (char c : input) {
@@ -30,7 +29,6 @@ void startClient() {
     struct sockaddr_in serverAddr;
     char buffer[1024];
 
-    // 创建 TCP Socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
         std::cerr << "Socket creation failed!" << std::endl;
@@ -48,28 +46,24 @@ void startClient() {
     }
     std::cout << "Client is up and running." << std::endl;
 
-    // 用户输入
     std::string username, password, departmentName;
     std::cout << "Please enter username: ";
     std::cin >> username;
 
     std::cout << "Please enter password (“Enter” to skip for guests): ";
-    std::cin.ignore(); // 清理缓冲
+    std::cin.ignore();
     std::getline(std::cin, password);
 
     std::cout << "Please enter department name: ";
     std::getline(std::cin, departmentName);
 
-    // 加密用户名和密码
     std::string encryptedUsername = encrypt(username);
     std::string encryptedPassword = password.empty() ? "" : encrypt(password);
 
-    // 构造请求
     std::string request = encryptedUsername + "," + encryptedPassword + "," + departmentName;
     send(sockfd, request.c_str(), request.size(), 0);
     std::cout << username <<" sent an authentication request to the main server."<<std::endl;
 
-    // 接收服务器响应
     memset(buffer, 0, sizeof(buffer));
     recv(sockfd, buffer, sizeof(buffer), 0);
 
@@ -78,13 +72,12 @@ void startClient() {
         std::cout << "Welcome " << (password.empty() ? "guest" : "member") << " " << username
                   << " from " << departmentName << "!" << std::endl;
 
-        // 持续发送请求
         while (true) {
             std::string roomType;
             std::string actionType;
-            std::cout << "Please enter the room type S/D/T:" << std::endl;
+            std::cout << "Please enter the room type S/D/T: ";
             std::getline(std::cin, roomType);
-            std::cout << "Please enter request action (availability, price, reserve):" << std::endl;
+            std::cout << "Please enter request action (availability, price, reserve): ";
             std::getline(std::cin, actionType);
 
             if (actionType == "availability"){
@@ -104,11 +97,9 @@ void startClient() {
                 std::string server, roomNum, detail;
 
                 size_t firstComma = receivedData.find(',');
-                // 找到第二个逗号的位置，从第一个逗号后开始查找
                 size_t secondComma = receivedData.find(',', firstComma + 1);
 
                 if (firstComma != std::string::npos && secondComma != std::string::npos) {
-                    // 提取逗号前后的字符串
                     server = receivedData.substr(0, firstComma);      
                     roomNum = receivedData.substr(firstComma + 1,secondComma - firstComma - 1);
                     detail = receivedData.substr(secondComma+1); 
