@@ -11,7 +11,7 @@
 #include <vector>
 #include <set>
 
-#define PORT_CAMPUS_SERVER_A 31768 
+#define PORT_CAMPUS_SERVER_B 32768 
 
 struct RoomInfo {
     int buildingID;
@@ -24,9 +24,9 @@ std::set<std::string> buildingSet;
 std::unordered_map<std::string, std::list<RoomInfo> > dormitoryData; // 用于存储宿舍数据
 
 void loadDataA() {
-    std::ifstream file("dataA.txt");
+    std::ifstream file("dataB.txt");
     if (!file.is_open()) {
-        std::cerr << "Failed to open dataA.txt" << std::endl;
+        std::cerr << "Failed to open dataB.txt" << std::endl;
         return;
     }
 
@@ -63,11 +63,11 @@ void initializeCampusServer(int &sockfd, sockaddr_in &serverAddr) {
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(PORT_CAMPUS_SERVER_A);
+    serverAddr.sin_port = htons(PORT_CAMPUS_SERVER_B);
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     
     bind(sockfd, (const struct sockaddr *)&serverAddr, sizeof(serverAddr));
-    std::cout << "Server A is up and running using UDP on port " << PORT_CAMPUS_SERVER_A << std::endl;
+    std::cout << "Server B is up and running using UDP on port " << PORT_CAMPUS_SERVER_B << std::endl;
 }
 
 void handleRequest(int sockfd) {
@@ -82,9 +82,9 @@ void handleRequest(int sockfd) {
 
     if (request == "REQUEST_DEPARTMENT_LIST") {
         
-        std::string response = std::to_string(PORT_CAMPUS_SERVER_A)+","+departmentList;
+        std::string response = std::to_string(PORT_CAMPUS_SERVER_B)+","+departmentList;
         sendto(sockfd, response.c_str(), response.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
-        std::cout << "Server A has sent a department list to Main Server" << std::endl;
+        std::cout << "Server B has sent a department list to Main Server" << std::endl;
     } else {
         size_t commaPos = request.find(',');
 
@@ -95,7 +95,7 @@ void handleRequest(int sockfd) {
         }
 
         if (requestType == "availability") {
-            std::cout << "Server A has received a query of Availability for room type "
+            std::cout << "Server B has received a query of Availability for room type "
                       << requestParam << std::endl;
             
             if (dormitoryData.find(requestParam) != dormitoryData.end()) {
@@ -111,9 +111,9 @@ void handleRequest(int sockfd) {
                 
                 std::ostringstream printFormat;
                 std::ostringstream responseFormat;
-                printFormat << "Server A found totally " << totalAvailability << " available rooms for "
+                printFormat << "Server B found totally " << totalAvailability << " available rooms for "
                          << requestParam << " type dormitory in Building: ";
-                responseFormat << "A,"<<totalAvailability << ",";
+                responseFormat << "B,"<<totalAvailability << ",";
 
                 for (size_t i = 0; i < buildingIDs.size(); ++i) {
                     printFormat << buildingIDs[i];
@@ -129,14 +129,14 @@ void handleRequest(int sockfd) {
                 std::cout << printFormatStr << std::endl;
 
                 sendto(sockfd, responseFormatStr.c_str(), responseFormatStr.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
-                std::cout << "Server A has sent the results to Main Server" << std::endl;
+                std::cout << "Server B has sent the results to Main Server" << std::endl;
             } else {
-                std::cout<< "Room type "<< requestParam <<" does not show up in Server A" << std::endl;
+                std::cout<< "Room type "<< requestParam <<" does not show up in Server B" << std::endl;
                 std::string errorMsg = "Not able to find the room type.";
                 sendto(sockfd, errorMsg.c_str(), errorMsg.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
             }
         }else if (requestType == "price"){
-            std::cout << "Server A has received a query of Price for room type "
+            std::cout << "Server B has received a query of Price for room type "
                 << requestParam << std::endl;
             if (dormitoryData.find(requestParam) != dormitoryData.end()) {
                 std::vector<int> buildingIDs;
@@ -151,8 +151,8 @@ void handleRequest(int sockfd) {
                 
                 std::ostringstream printFormat;
                 std::ostringstream responseFormat;
-                printFormat << "Server A found room type " << requestParam << " with prices:"<<std::endl;
-                responseFormat << "Server A found room type " << requestParam << " with prices:"<<std::endl;
+                printFormat << "Server B found room type " << requestParam << " with prices:"<<std::endl;
+                responseFormat << "Server B found room type " << requestParam << " with prices:"<<std::endl;
 
                 for (size_t i = 0; i < buildingIDs.size(); ++i) {
                     printFormat << "Building ID "<< buildingIDs[i]<<", Price $ "<<prices[i]<<std::endl;
@@ -164,10 +164,10 @@ void handleRequest(int sockfd) {
                 std::cout << printFormatStr << std::endl;
 
                 sendto(sockfd, responseFormatStr.c_str(), responseFormatStr.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
-                std::cout << "Server A has sent the results to Main Server" << std::endl;
+                std::cout << "Server B has sent the results to Main Server" << std::endl;
                 
             }else{
-                std::cout<< "Room type "<< requestParam <<" does not show up in Server A" << std::endl;
+                std::cout<< "Room type "<< requestParam <<" does not show up in Server B" << std::endl;
                 std::string errorMsg = "Not able to find the room type.";
                 sendto(sockfd, errorMsg.c_str(), errorMsg.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
             }
@@ -178,11 +178,11 @@ void handleRequest(int sockfd) {
                 dormType = requestParam.substr(0, commaPos);               
                 buildingID = requestParam.substr(commaPos + 1);             
             }
-            std::cout << "Server A has received a query of Reserve for room type "
+            std::cout << "Server B has received a query of Reserve for room type "
                 << dormType <<" at Building ID "<<buildingID<< std::endl;
 
             if (dormitoryData.find(dormType) == dormitoryData.end()){
-                std::cout<< "Room type "<< dormType <<" does not show up in Server A" << std::endl;
+                std::cout<< "Room type "<< dormType <<" does not show up in Server B" << std::endl;
                 std::string errorMsg = "Reservation failed: Not able to find the room type.";
                 sendto(sockfd, errorMsg.c_str(), errorMsg.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
             }
@@ -194,7 +194,7 @@ void handleRequest(int sockfd) {
                 for (auto& room : dormitoryData[dormType]) {
                     if (std::to_string(room.buildingID) == buildingID && room.availability > 0){
                         room.availability -= 1;
-                        response = "Reservation is successful for Campus A Building ID " + buildingID +"!";
+                        response = "Reservation is successful for Campus B Building ID " + buildingID +"!";
                         break;
                     }
                 }
@@ -204,7 +204,7 @@ void handleRequest(int sockfd) {
                 sendto(sockfd, response.c_str(), response.length(), 0, (const struct sockaddr *)&mainServerAddr, addrLen);
             }
         }
-        std::cout<< "Server A has sent the results to Main Server"<<std::endl;
+        std::cout<< "Server B has sent the results to Main Server"<<std::endl;
 
     }
 }
