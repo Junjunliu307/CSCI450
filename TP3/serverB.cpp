@@ -21,7 +21,7 @@ struct RoomInfo {
 
 std::string departmentList; 
 std::set<std::string> buildingSet;
-std::unordered_map<std::string, std::list<RoomInfo> > dormitoryData; // 用于存储宿舍数据
+std::unordered_map<std::string, std::list<RoomInfo> > dormitoryData;
 
 void loadDataA() {
     std::ifstream file("dataB.txt");
